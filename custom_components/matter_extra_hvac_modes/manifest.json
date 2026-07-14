@@ -1,0 +1,13 @@
+{
+  "domain": "matter_extra_hvac_modes",
+  "name": "Matter Extra HVAC Modes",
+  "codeowners": ["@AndrewDemsDS"],
+  "dependencies": [],
+  "after_dependencies": ["matter"],
+  "documentation": "https://github.com/AndrewDemsDS/ha-matter-extra-hvac-modes",
+  "integration_type": "system",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/AndrewDemsDS/ha-matter-extra-hvac-modes/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}
