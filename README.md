@@ -31,18 +31,31 @@ upgrades**, and it's wrapped in `try/except` so a future HA refactor can't break
 
 Manual install: copy `custom_components/matter_extra_hvac_modes/` into your HA `config/custom_components/`, add the line above, restart.
 
-## Configuration
+## Automatic — no per-device setup
 
-Defaults to `(0xFFF1, 0x8000)`. To target different / additional devices, list `[vendor_id, product_id]` pairs (decimal or `0x` hex both work):
+By default this enables Dry/Fan for **every Matter climate device whose vendor id is `0xFFF1`**
+(the Matter *test* vendor used by virtually all DIY / ESP32 / esp-matter builds). So all your
+DIY A/Cs — regardless of their product id — get Dry/Fan with **zero configuration**. Just add
+`matter_extra_hvac_modes:` and restart.
+
+## Configuration (all optional)
 
 ```yaml
 matter_extra_hvac_modes:
-  devices:
-    - [0xFFF1, 0x8000]
-    - [0xFFF1, 0x8001]
+  vendors: [0xFFF1]          # every product of these vendor ids gets Dry+Fan (default: [0xFFF1])
+  devices:                   # explicit [vendor_id, product_id] pairs, for non-test vendors
+    - [0x1234, 0x5678]
 ```
 
-Find your device's vendor/product id in **Settings → Devices → your Matter device → Device info**,
+- **`vendors`** — enable Dry/Fan for *all* A/Cs from these vendor ids. Default `[0xFFF1]`. Set to
+  `[]` if you only want the explicit `devices` list.
+- **`devices`** — explicit `[vendor_id, product_id]` pairs (decimal or `0x` hex), for devices on a
+  real (non-test) vendor id.
+
+Only Matter **climate** entities are affected, so enabling a whole vendor is safe — a non-A/C
+device on that vendor simply has no climate entity to touch.
+
+Find a device's vendor/product id in **Settings → Devices → your Matter device → Device info**,
 or via the Matter Server (`Basic Information` cluster, attributes `0x0002` / `0x0004`).
 
 ## How it works
