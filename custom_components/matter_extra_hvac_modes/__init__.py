@@ -154,10 +154,26 @@ def _apply(conf) -> bool:
         return False
 
 
+# Import-time best-effort patch with the defaults (vendor 0xFFF1, dry/fan/single-setpoint on).
+# This module is imported while HA loads the integration — typically *before* the Matter
+# integration builds its climate entities — so the entities pick up the unlocked modes on their
+# very first build, with no reliance on a later reload. async_setup() re-applies with the user's
+# real config (extra vendors, devices, target_temperature_step); the async_at_started reload is a
+# backstop for the case where Matter happened to build entities before we were imported.
+_apply({})
+
+
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Patch, then reload the Matter entry once HA has started so the entities rebuild."""
+    """Patch, then reload the Matter entry once HA has started so the entities rebuild.
+
+    The reload is essential, not just a backstop: HA's ``_calculate_features`` early-returns when the
+    Thermostat FeatureMap is unchanged, and on the *initial* entity build the node's
+    ``device_info.vendorID`` can still be unpopulated — so the first computation misses our
+    allow-listed modes and never recomputes. Reloading the config entry rebuilds the entities fresh,
+    with device_info populated and our patch in place, so Dry/Fan/single-setpoint appear.
+    """
     conf = config.get(DOMAIN) or {}
-    _apply(conf)  # early best-effort
+    _apply(conf)  # re-apply with the user's real config
 
     async def _reload_matter(_hass: HomeAssistant) -> None:
         if not _apply(conf):
